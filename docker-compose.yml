@@ -1,0 +1,68 @@
+version: '3.1' # 定义 Docker Compose 文件的版本
+
+services:
+  mysql: # 定义一个名为 "mysql" 的服务
+    restart: always # 配置容器自动重启策略，总是重启容器
+    image: mysql:5.7 # 使用 MySQL 5.7 镜像
+    container_name: mysql # 指定容器名称为 "mysql"
+    ports:
+      - "3306:3306" # 将主机的 3306 端口映射到容器的 3306 端口
+    environment:
+      MYSQL_ROOT_PASSWORD: root # 设置 MySQL ROOT 用户的密码为 "root"
+      TZ: Asia/Shanghai # 设置容器的时区为上海
+    volumes:
+      - E:/newgo/wswdocker/docker-mysql/data:/var/lib/mysql # 将主机的 mysql_data 目录挂载到容器的 MySQL 数据目录
+      - E:/newgo/wswdocker/docker-mysql/conf:/etc/mysql/conf.d # （可选）将主机的 mysql_conf 目录挂载到容器的 MySQL 配置目录
+      - E:/newgo/wswdocker/docker-mysql/log:/var/log/mysql
+    healthcheck: # 配置健康检查
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -proot"] # 运行命令检查 MySQL 服务状态
+      interval: 30s # 每 30 秒运行一次健康检查
+      timeout: 10s # 健康检查的超时时间为 10 秒
+      retries: 3 # 在标记为不健康之前，重试 3 次
+    logging: # 配置日志驱动和选项
+      driver: "json-file" # 使用 json-file 日志驱动
+      options:
+        max-size: "10m" # 每个日志文件的最大大小为 10MB
+        max-file: "3" # 最多保留 3 个日志文件
+
+  redis: # 定义一个名为 "redis" 的服务
+    restart: always # 配置容器自动重启策略，总是重启容器
+    image: redis:7.2.5 # 使用 Redis 7.2.5 镜像
+    container_name: redis # 指定容器名称为 "redis"
+    ports:
+      - "6379:6379" # 将主机的 6379 端口映射到容器的 6379 端口
+    volumes:
+      - E:/newgo/wswdocker/docker-redis/data:/data # 将主机的 data 目录挂载到容器的 Redis 数据目录
+      - E:/newgo/wswdocker/docker-redis/redis.conf:/usr/local/etc/redis/redis.conf # 将主机的 redis.conf 文件挂载到容器的 Redis 配置目录
+    command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ] # 使用指定的配置文件启动 Redis
+    logging: # 配置日志驱动和选项
+      driver: "json-file" # 使用 json-file 日志驱动
+      options:
+        max-size: "10m" # 每个日志文件的最大大小为 10MB
+        max-file: "3" # 最多保留 3 个日志文件
+
+  php:
+    restart: always # 配置容器自动重启策略，总是重启容器
+    image: php:7.3-fpm
+    container_name: php-fpm-73
+    ports:
+      - "9000:9000"
+    volumes:
+      - E:/newgo/wswdocker/docker-php/web:/var/www/html #代码目录
+      #- E:/newgo/wswdocker/docker-php/etc:/usr/local/etc #php配置文件夹，可选
+      - E:/newgo/wswdocker/docker-php/log:/var/log/php #log，可选
+
+  nginx:
+    restart: always # 配置容器自动重启策略，总是重启容器
+    container_name: nginx
+    image: nginx:latest
+    environment:
+      - TZ=Asia/Shanghai
+    ports:
+      - "8008:80"
+    depends_on:
+      - php
+    volumes:
+      - E:/newgo/wswdocker/docker-php/web:/var/www/html #代码目录
+      - E:/newgo/wswdocker/docker-nginx/nginx_conf.d:/etc/nginx/conf.d #配置文件目录
+      - E:/newgo/wswdocker/docker-nginx/log:/var/log/nginx #log，可选
