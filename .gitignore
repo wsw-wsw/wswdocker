@@ -5,6 +5,7 @@ docker-nginx/logs
 docker-php/logs
 docker-php/web
 docker-redis/data
+docker-rabbitmq/data
 .idea
 
 

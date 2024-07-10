@@ -88,3 +88,20 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
     depends_on:
       - zookeeper
+
+  rabbitmq:
+#    restart: always
+    image: rabbitmq:management
+    container_name: rabbitmqTest
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      TZ: Asia/Shanghai
+      RABBITMQ_DEFAULT_VHOST: '/'
+      RABBITMQ_DEFAULT_USER: rabbit
+      RABBITMQ_DEFAULT_PASS: 123456
+    volumes:
+      - ./docker-rabbitmq/data:/var/lib/rabbitmq
+      - ./docker-rabbitmq/conf:/etc/rabbitmq
+#    command: [ "rabbitmq-plugins", "enable","rabbitmq_management"]
